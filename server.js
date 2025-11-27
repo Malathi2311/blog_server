@@ -13,7 +13,6 @@ await connectDB()
 
 //Middlewares
 app.use(cors());
-app.options('*', cors());
 app.use(express.json())
 
 app.get('/',(req, res)=> res.send("API is Working"))
