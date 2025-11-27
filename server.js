@@ -12,7 +12,9 @@ const app = express();
 await connectDB()
 
 //Middlewares
-app.use(cors())
+app.use(cors({origin : ["http://localhost:5173","https://jade-eclair-d0c39c.netlify.app/"],
+    credentials: true
+}));
 app.use(express.json())
 
 app.get('/',(req, res)=> res.send("API is Working"))
