@@ -38,3 +38,31 @@ export const loginUser = async (req, res) => {
     res.json({ success: false, message: error.message });
   }
 };
+export const adminLogin = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    const admin = await Admin.findOne({ email });
+    if (!admin)
+      return res.json({ success: false, message: "Invalid email" });
+
+    const match = await bcrypt.compare(password, admin.password);
+    if (!match)
+      return res.json({ success: false, message: "Invalid password" });
+
+    const token = jwt.sign(
+      { id: admin._id, isAdmin: true },
+      process.env.JWT_SECRET,
+      { expiresIn: "30d" }
+    );
+
+    return res.json({
+      success: true,
+      message: "Admin login successful",
+      token,
+      isAdmin: true
+    });
+  } catch (error) {
+    return res.json({ success: false, message: error.message });
+  }
+};
