@@ -14,20 +14,37 @@ const app = express();
 await connectDB()
 
 //Middlewares
+const allowedOrigins = [
+  'http://localhost:5173',
+  'https://jade-eclair-d0c39c.netlify.app',
+  
+]
+
 app.use(cors({
-  origin: [
-    "http://localhost:5173",
-    "https://jade-eclair-d0c39c.netlify.app"
-  ],
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: true
+  origin: (origin, callback) => {
+    
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) === -1) {
+      return callback(new Error('CORS policy: origin not allowed'), false);
+    }
+    return callback(null, true);
+  },
+  methods: ['GET','POST','PUT','DELETE','OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+  credentials: true,
 }));
 
-app.options('*', cors());  
-
-
 app.use(express.json())
+app.use((req, res, next) => {
+  if (req.method === 'OPTIONS') {
+    res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Accept');
+    
+    return res.sendStatus(200);
+  }
+  next();
+});
+
 app.use('/api/auth', authRouter);
 
 
