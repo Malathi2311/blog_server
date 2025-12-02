@@ -24,20 +24,33 @@ export const registerUser = async (req, res) => {
 export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
-    if (!email || !password) return res.json({ success: false, message: "Missing fields" });
 
     const user = await User.findOne({ email });
-    if (!user) return res.json({ success: false, message: "Invalid credentials" });
+    if (!user)
+      return res.json({ success: false, message: "User not found" });
 
     const match = await bcrypt.compare(password, user.password);
-    if (!match) return res.json({ success: false, message: "Invalid credentials" });
+    if (!match)
+      return res.json({ success: false, message: "Incorrect password" });
 
-    const token = jwt.sign({ id: user._id, email: user.email }, process.env.JWT_SECRET);
-    res.json({ success: true, token, user: { name: user.name, email: user.email, _id: user._id } });
+    const token = jwt.sign(
+      { id: user._id, isAdmin: false },
+      process.env.JWT_SECRET,
+      { expiresIn: "30d" }
+    );
+
+    return res.json({
+      success: true,
+      token,
+      user,
+      isAdmin: false
+    });
+
   } catch (error) {
-    res.json({ success: false, message: error.message });
+    return res.json({ success: false, message: error.message });
   }
 };
+
 export const adminLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
